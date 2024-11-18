@@ -29,6 +29,8 @@ func main() {
 		if err != nil {
 			log.Debug("Error while migrating database down!")
 			panic(err)
+		} else {
+
 		}
 	default:
 		log.Info("No action provided! Exiting...")
