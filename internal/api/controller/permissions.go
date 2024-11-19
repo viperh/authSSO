@@ -1,4 +1,4 @@
-package permissions
+package controller
 
 import "gorm.io/gorm"
 
