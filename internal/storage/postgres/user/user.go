@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type StorageInterface interface {
-	CreateUser(ctx context.Context, email, password, username string) error
+type userStorage interface {
+	CreateUser(ctx context.Context, email, password, username string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserById(ctx context.Context, id uint64) (*models.User, error)
@@ -19,7 +19,7 @@ type StorageInterface interface {
 }
 
 type Storage struct {
-	StorageInterface
+	userStorage
 	Db  *gorm.DB
 	Log *slog.Logger
 }

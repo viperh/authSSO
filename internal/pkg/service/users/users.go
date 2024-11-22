@@ -1,57 +1,44 @@
 package users
 
 import (
+	"authSSO/internal/config"
+	rlog "authSSO/internal/log"
 	"authSSO/internal/models"
+	"authSSO/internal/storage"
+	"authSSO/internal/storage/postgres/user"
 	"context"
-	"gorm.io/gorm"
 )
 
 type Service struct {
-	db *gorm.DB
+	db  *user.Storage
+	cfg *config.Config
+	log *rlog.Logger
 }
 
-func NewService(db *gorm.DB) *Service {
-	return &Service{db: db}
+func NewService(userProvider *user.Storage, cfg *config.Config, log *rlog.Logger) *Service {
+	return &Service{db: userProvider, cfg: cfg, log: log}
 }
 
-func (s *Service) CreateUser(ctx context.Context, user *models.User) error {
-	result := s.db.WithContext(ctx).Create(user)
-	if result.Error != nil {
-		return result.Error
+func (s *Service) CreateUser(ctx context.Context, email, username, password string) error {
+	_, err := s.db.GetUserByEmail(ctx, email)
+	if err != nil {
+		return storage.ErrUserExists
 	}
 	return nil
 }
 
 func (s *Service) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	user := &models.User{}
-	result := s.db.WithContext(ctx).Where("email = ?", email).First(user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return user, nil
+	return nil, nil
 }
 
 func (s *Service) GetUserByID(ctx context.Context, id uint64) (*models.User, error) {
-	user := &models.User{}
-	result := s.db.WithContext(ctx).Where("id = ?", id).First(user)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return user, nil
+	return nil, nil
 }
 
 func (s *Service) UpdateUser(ctx context.Context, user *models.User) error {
-	result := s.db.WithContext(ctx).Save(user)
-	if result.Error != nil {
-		return result.Error
-	}
 	return nil
 }
 
 func (s *Service) DeleteUser(ctx context.Context, user *models.User) error {
-	result := s.db.WithContext(ctx).Delete(user)
-	if result.Error != nil {
-		return result.Error
-	}
 	return nil
 }

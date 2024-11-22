@@ -1,31 +1,29 @@
 package roles
 
 import (
+	"authSSO/internal/config"
+	rlog "authSSO/internal/log"
 	"authSSO/internal/models"
+	"authSSO/internal/storage/postgres/role"
 	"context"
-	"gorm.io/gorm"
 )
 
 type Service struct {
-	db *gorm.DB
+	db  *role.Storage
+	cfg *config.Config
+	log *rlog.Logger
 }
 
-func NewService(db *gorm.DB) *Service {
-	return &Service{db: db}
-}
-
-func (s *Service) GetRoles(ctx context.Context) ([]*models.Role, error) {
-	var roles []*models.Role
-	result := s.db.WithContext(ctx).Find(&roles)
-	if result.Error != nil {
-		return nil, result.Error
+func NewService(roleProvider *role.Storage, cfg *config.Config, log *rlog.Logger) *Service {
+	return &Service{
+		db:  roleProvider,
+		cfg: cfg,
+		log: log,
 	}
-
-	return roles, nil
 }
 
 func (s *Service) CreateRole(ctx context.Context, role *models.Role) error {
-	result := s.db.WithContext(ctx).Create(role)
+	result := s.db.Db.WithContext(ctx).Create(role)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -34,29 +32,13 @@ func (s *Service) CreateRole(ctx context.Context, role *models.Role) error {
 }
 
 func (s *Service) GetRoleByID(ctx context.Context, id uint) (*models.Role, error) {
-	var role models.Role
-	result := s.db.WithContext(ctx).First(&role, id)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	return &role, nil
+	return s.GetRoleByID(ctx, id)
 }
 
 func (s *Service) UpdateRole(ctx context.Context, role *models.Role) error {
-	result := s.db.WithContext(ctx).Save(role)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
+	return s.UpdateRole(ctx, role)
 }
 
 func (s *Service) DeleteRole(ctx context.Context, role *models.Role) error {
-	result := s.db.WithContext(ctx).Delete(role)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
+	return s.DeleteRole(ctx, role)
 }

@@ -16,6 +16,4 @@ func NewService(db *gorm.DB) *Service {
 
 func (s *Service) Login(c context.Context, data controller.LoginRequest) {}
 
-func (s *Service) Register() {
-
-}
+func (s *Service) Register() {}

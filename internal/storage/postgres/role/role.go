@@ -9,15 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type StorageInterface interface {
-	CreateRole(ctx context.Context, name, description string) error
+type roleStorage interface {
+	CreateRole(ctx context.Context, name, description string) (*models.Role, error)
 	GetRoleById(ctx context.Context, roleId uint64) (*models.Role, error)
 	GetRoleByName(ctx context.Context, name string) (*models.Role, error)
 	UpdateRole(ctx context.Context, roleId uint64, name, description string) error
 	DeleteRole(ctx context.Context, roleId uint64) error
 }
+
 type Storage struct {
-	StorageInterface
+	roleStorage
 	Db  *gorm.DB
 	Log *slog.Logger
 }

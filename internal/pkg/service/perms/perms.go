@@ -1,40 +1,35 @@
 package perms
 
 import (
+	"authSSO/internal/config"
+	rlog "authSSO/internal/log"
 	"authSSO/internal/models"
+	"authSSO/internal/storage/postgres/perms"
 	"context"
-	"gorm.io/gorm"
 )
 
 type Service struct {
-	db *gorm.DB
+	db  *perms.Storage
+	cfg *config.Config
+	log *rlog.Logger
 }
 
-func NewService(db *gorm.DB) *Service {
-	return &Service{db: db}
-}
-
-func (s *Service) GetPermsByUserId(ctx context.Context, userId uint64) ([]models.Role, error) {
-	var roles []models.Role
-	result := s.db.WithContext(ctx).Where("id = ?", userId).Find(&roles)
-	if result.Error != nil {
-		return nil, result.Error
+func NewService(permsProvider *perms.Storage, cfg *config.Config, log *rlog.Logger) *Service {
+	return &Service{
+		db:  permsProvider,
+		cfg: cfg,
+		log: log,
 	}
-	return roles, nil
+}
+
+func (s *Service) GetPermsByUserId(ctx context.Context, userId uint64) ([]models.UserRole, error) {
+	return s.db.GetPermsByUserId(ctx, userId)
 }
 
 func (s *Service) AddUserRoleById(ctx context.Context, userId uint64, roleId uint64) error {
-	result := s.db.WithContext(ctx).Create(&models.UserRole{UserID: userId, RoleID: roleId})
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	return s.db.AddUserRoleById(ctx, userId, roleId)
 }
 
 func (s *Service) DeleteUserRoleById(ctx context.Context, userId uint64, roleId uint64) error {
-	result := s.db.WithContext(ctx).Where("user_id = ? AND role_id = ?", userId, roleId).Delete(&models.UserRole{})
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	return s.db.DeleteUserRoleById(ctx, userId, roleId)
 }
